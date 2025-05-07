@@ -10,7 +10,7 @@ function Registration() {
   const [registrationResult, setRegistrationResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   // API URL can be accessed from the environment variable
-  const baseUrl = import.meta.env.VITE_API_URL||'http://face-server.duvarakesh.xyz';
+  const baseUrl = import.meta.env.VITE_API_URL||'https://face-server.duvarakesh.xyz';
   console.log('VITE_API_URL:', baseUrl);
   const apiUrl = `${baseUrl}/api/register`;
 
