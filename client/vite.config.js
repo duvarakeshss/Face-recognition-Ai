@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: "https://face-server.duvarakesh.xyz",
+        target: apiProxyUrl,
         changeOrigin: true
       }
     }
