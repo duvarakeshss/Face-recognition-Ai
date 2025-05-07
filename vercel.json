@@ -1,1 +1,19 @@
- 
+{
+  "version": 2,
+  "scope": "face-reg-ai",
+  "buildCommand": "echo 'Root project build - see individual projects for build commands'",
+  "github": {
+    "silent": true,
+    "autoJobCancelation": true
+  },
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://face-reg-ai-client.vercel.app",
+      "permanent": true
+    }
+  ]
+} 
