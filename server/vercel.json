@@ -18,7 +18,6 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "PYTHON_API_URL": "@python_api_url",
     "CLIENT_URL": "@client_url"
   }
 } 

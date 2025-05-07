@@ -2,6 +2,7 @@ import express from 'express';
 import axios from 'axios';
 import multer from 'multer';
 import FormData from 'form-data';
+import "dotenv/config";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.post('/', upload.single('image'), async (req, res) => {
   
   try {
     // Get the Python server URL for face recognition
-    const pythonServerUrl = 'http://localhost:8000/recognize-face';
+    const pythonServerUrl = `${process.env.API_URL}\recognize-face`;
     
     // Create form data from the memory buffer using form-data package
     const formData = new FormData();

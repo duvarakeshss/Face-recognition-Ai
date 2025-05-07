@@ -1,79 +1,301 @@
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
+# from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+# from fastapi.responses import JSONResponse
+# from fastapi.middleware.cors import CORSMiddleware
+# from typing import Optional
+# import numpy as np
+# import base64
+# import cv2
+# from datetime import datetime
+
+# from db import create_indices, insert_face, find_all_faces_for_comparison
+# from face_utils import detect_faces, extract_face_encoding, compare_face_encodings, create_face_document
+
+# app = FastAPI(title="Face Recognition API")
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+# @app.on_event("startup")
+# async def startup_event():
+#     await create_indices()
+
+# @app.get("/")
+# async def root():
+#     return {"status": "ok", "message": "Face Recognition API is running", "version": "1.0.0"}
+
+# @app.post("/register-face")
+# async def register_face(
+#     name: str = Form(...),
+#     image: UploadFile = File(...),
+#     similarity_threshold: Optional[float] = Form(0.8)
+# ):
+#     try:
+#         contents = await image.read()
+#         img = cv2.imdecode(np.frombuffer(contents, np.uint8), cv2.IMREAD_COLOR)
+#         if img is None:
+#             raise HTTPException(status_code=400, detail="Invalid image")
+
+#         faces = detect_faces(img)
+#         if len(faces) != 1:
+#             raise HTTPException(status_code=400, detail="Please upload an image with exactly one face")
+
+#         x, y, w, h = faces[0]
+#         face_img = img[y:y+h, x:x+w]
+#         new_encoding = extract_face_encoding(face_img)
+#         if new_encoding is None:
+#             raise HTTPException(status_code=400, detail="Face encoding failed")
+
+#         existing_faces = await find_all_faces_for_comparison()
+#         for face in existing_faces:
+#             similarity = compare_face_encodings(face["face_encoding"], new_encoding)
+#             if similarity >= similarity_threshold:
+#                 return {
+#                     "status": "duplicate",
+#                     "id": str(face["_id"]),
+#                     "name": face["name"],
+#                     "similarity": similarity,
+#                     "timestamp": datetime.now().isoformat()
+#                 }
+
+#         doc = create_face_document(name, face_img, new_encoding)
+#         face_id = await insert_face(doc)
+#         return {
+#             "status": "success",
+#             "id": face_id,
+#             "name": name,
+#             "timestamp": datetime.now().isoformat()
+#         }
+
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+
+# @app.post("/recognize-face")
+# async def recognize_face(
+#     image: UploadFile = File(...),
+#     similarity_threshold: Optional[float] = Form(0.65),
+#     max_results: Optional[int] = Form(5),
+#     max_faces: Optional[int] = Form(5)
+# ):
+#     try:
+#         contents = await image.read()
+#         img = cv2.imdecode(np.frombuffer(contents, np.uint8), cv2.IMREAD_COLOR)
+#         if img is None:
+#             raise HTTPException(status_code=400, detail="Invalid image")
+
+#         faces = detect_faces(img)[:max_faces]
+#         if not faces:
+#             raise HTTPException(status_code=400, detail="No faces detected")
+
+#         all_db_faces = await find_all_faces_for_comparison()
+#         results = []
+
+#         for i, (x, y, w, h) in enumerate(faces):
+#             face_img = img[y:y+h, x:x+w]
+#             encoding = extract_face_encoding(face_img)
+#             if encoding is None:
+#                 continue
+
+#             matches = []
+#             for db_face in all_db_faces:
+#                 similarity = compare_face_encodings(encoding, db_face["face_encoding"])
+#                 if similarity >= similarity_threshold:
+#                     matches.append({
+#                         "id": str(db_face["_id"]),
+#                         "name": db_face["name"],
+#                         "similarity": similarity
+#                     })
+
+#             matches.sort(key=lambda x: x["similarity"], reverse=True)
+#             matches = matches[:max_results]
+
+#             _, buffer = cv2.imencode(".jpg", face_img)
+#             face_b64 = base64.b64encode(buffer).decode("utf-8")
+
+#             results.append({
+#                 "face_id": i,
+#                 "position": {"x": x, "y": y, "width": w, "height": h},
+#                 "image_base64": face_b64,
+#                 "matches": matches
+#             })
+
+#         return {"status": "success", "total_faces_detected": len(faces), "results": results}
+
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
 import numpy as np
 import base64
-import cv2
+from typing import Dict, Any, Optional, List
 from datetime import datetime
+from pydantic import BaseModel, Field
+from bson import ObjectId
+from json import JSONEncoder
 
-from db import create_indices, insert_face, find_all_faces_for_comparison
-from face_utils import detect_faces, extract_face_encoding, compare_face_encodings, create_face_document
+# Import utility modules
+from face_utils import (
+    detect_faces, 
+    extract_face_encoding, 
+    create_face_document,
+    compare_face_encodings
+)
+
+# Import database module
+import db
+
+# Custom JSON encoder for ObjectId
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return JSONEncoder.default(self, obj)
+
+# Custom field for ObjectId
+class PyObjectId(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+        
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid ObjectId")
+        return str(ObjectId(v))
+    
+    @classmethod
+    def __get_pydantic_json_schema__(cls, field_schema, **kwargs):
+        field_schema.update(type="string")
 
 app = FastAPI(title="Face Recognition API")
 
+@app.on_event("startup")
+async def startup_db_client():
+    await db.create_indices()
+
+# Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow all origins (for development)
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
-@app.on_event("startup")
-async def startup_event():
-    await create_indices()
-
-@app.get("/")
-async def root():
-    return {"status": "ok", "message": "Face Recognition API is running", "version": "1.0.0"}
-
 @app.post("/register-face")
-async def register_face(
+async def process_face(
     name: str = Form(...),
     image: UploadFile = File(...),
+    additional_info: Optional[str] = Form(None),
     similarity_threshold: Optional[float] = Form(0.8)
 ):
+    """
+    Process a face: recognize, encode, and save to database if unique
+    
+    - **name**: Name of the person
+    - **image**: Image file containing a face
+    - **additional_info**: Any additional information about the person as JSON string
+    - **similarity_threshold**: Threshold for face similarity (0.0 to 1.0, higher is more strict)
+    
+    Returns:
+        - Face ID
+        - Name
+        - Status message
+        - Timestamp
+        - Is duplicate (boolean)
+    """
     try:
+        # Read the image
         contents = await image.read()
-        img = cv2.imdecode(np.frombuffer(contents, np.uint8), cv2.IMREAD_COLOR)
+        nparr = np.frombuffer(contents, np.uint8)
+        import cv2
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
         if img is None:
-            raise HTTPException(status_code=400, detail="Invalid image")
-
+            raise HTTPException(status_code=400, detail="Could not decode image")
+        
+        # Process additional info
+        additional_info_dict = {}
+        if additional_info:
+            import json
+            try:
+                additional_info_dict = json.loads(additional_info)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="Invalid JSON in additional_info")
+        
+        # Detect faces
         faces = detect_faces(img)
-        if len(faces) != 1:
-            raise HTTPException(status_code=400, detail="Please upload an image with exactly one face")
-
+        
+        if len(faces) == 0:
+            raise HTTPException(status_code=400, detail="No face detected in the image")
+        
+        if len(faces) > 1:
+            raise HTTPException(status_code=400, detail="Multiple faces detected. Please provide an image with a single face")
+        
+        # Extract the face region
         x, y, w, h = faces[0]
         face_img = img[y:y+h, x:x+w]
-        new_encoding = extract_face_encoding(face_img)
-        if new_encoding is None:
-            raise HTTPException(status_code=400, detail="Face encoding failed")
-
-        existing_faces = await find_all_faces_for_comparison()
-        for face in existing_faces:
-            similarity = compare_face_encodings(face["face_encoding"], new_encoding)
+        
+        # Extract face encoding
+        new_face_encoding = extract_face_encoding(face_img)
+        
+        # Check for duplicate faces
+        all_faces = await db.find_all_faces_for_comparison()
+        
+        # Look for similar faces
+        duplicate_face = None
+        highest_similarity = 0.0
+        
+        for face in all_faces:
+            known_face_encoding = face["face_encoding"]
+            similarity = compare_face_encodings(known_face_encoding, new_face_encoding)
+            
+            if similarity > highest_similarity:
+                highest_similarity = similarity
+                
             if similarity >= similarity_threshold:
-                return {
-                    "status": "duplicate",
-                    "id": str(face["_id"]),
-                    "name": face["name"],
-                    "similarity": similarity,
-                    "timestamp": datetime.now().isoformat()
-                }
-
-        doc = create_face_document(name, face_img, new_encoding)
-        face_id = await insert_face(doc)
+                duplicate_face = face
+                break
+        
+        # If a duplicate face is found, return information about it
+        if duplicate_face:
+            return {
+                "id": str(duplicate_face["_id"]),
+                "name": duplicate_face["name"],
+                "message": "Similar face already exists in the database",
+                "timestamp": datetime.now().isoformat(),
+                "is_duplicate": True,
+                "similarity": highest_similarity
+            }
+        
+        # If no duplicate, create and store the new face
+        face_document = create_face_document(
+            name,
+            face_img,
+            new_face_encoding,
+            additional_info_dict
+        )
+        
+        # Store in database
+        face_id = await db.insert_face(face_document)
+        
         return {
-            "status": "success",
             "id": face_id,
             "name": name,
-            "timestamp": datetime.now().isoformat()
+            "message": "Face processed and saved successfully",
+            "timestamp": datetime.now().isoformat(),
+            "is_duplicate": False,
+            "similarity": highest_similarity
         }
-
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        raise HTTPException(status_code=500, detail=f"Error processing face: {str(e)}")
 
 @app.post("/recognize-face")
 async def recognize_face(
@@ -82,49 +304,89 @@ async def recognize_face(
     max_results: Optional[int] = Form(5),
     max_faces: Optional[int] = Form(5)
 ):
+    """
+    Recognize multiple faces from an uploaded image
+    
+    - **image**: Image file containing faces to recognize
+    - **similarity_threshold**: Threshold for face similarity (0.0 to 1.0)
+    - **max_results**: Maximum number of matching results to return per face
+    - **max_faces**: Maximum number of faces to detect and process
+    
+    Returns:
+        - List of detected faces with their positions
+        - Matching results for each detected face
+    """
     try:
+        # Read the image
         contents = await image.read()
-        img = cv2.imdecode(np.frombuffer(contents, np.uint8), cv2.IMREAD_COLOR)
+        nparr = np.frombuffer(contents, np.uint8)
+        import cv2
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
         if img is None:
-            raise HTTPException(status_code=400, detail="Invalid image")
-
-        faces = detect_faces(img)[:max_faces]
-        if not faces:
-            raise HTTPException(status_code=400, detail="No faces detected")
-
-        all_db_faces = await find_all_faces_for_comparison()
-        results = []
-
+            raise HTTPException(status_code=400, detail="Could not decode image")
+        
+        # Detect faces
+        faces = detect_faces(img)
+        
+        if len(faces) == 0:
+            raise HTTPException(status_code=400, detail="No face detected in the image")
+        
+        # Limit the number of faces to process
+        faces = faces[:max_faces]
+        
+        # Get all faces from database for comparison
+        all_faces = await db.find_all_faces_for_comparison()
+        
+        # Process each detected face
+        face_results = []
         for i, (x, y, w, h) in enumerate(faces):
             face_img = img[y:y+h, x:x+w]
-            encoding = extract_face_encoding(face_img)
-            if encoding is None:
-                continue
-
+            
+            # Extract face encoding
+            face_encoding = extract_face_encoding(face_img)
+            
+            # Compare with all faces in the database
             matches = []
-            for db_face in all_db_faces:
-                similarity = compare_face_encodings(encoding, db_face["face_encoding"])
+            for db_face in all_faces:
+                known_face_encoding = db_face["face_encoding"]
+                similarity = compare_face_encodings(known_face_encoding, face_encoding)
+                
                 if similarity >= similarity_threshold:
                     matches.append({
                         "id": str(db_face["_id"]),
                         "name": db_face["name"],
-                        "similarity": similarity
+                        "similarity": similarity,
+                        "registration_timestamp": db_face["registration_timestamp"]
                     })
-
+            
+            # Sort matches by similarity (highest first)
             matches.sort(key=lambda x: x["similarity"], reverse=True)
+            
+            # Limit results
             matches = matches[:max_results]
-
-            _, buffer = cv2.imencode(".jpg", face_img)
-            face_b64 = base64.b64encode(buffer).decode("utf-8")
-
-            results.append({
+            
+            # Encode the face image for response
+            _, buffer = cv2.imencode('.jpg', face_img)
+            face_base64 = base64.b64encode(buffer).decode('utf-8')
+            
+            # Add this face to results
+            face_results.append({
                 "face_id": i,
-                "position": {"x": x, "y": y, "width": w, "height": h},
-                "image_base64": face_b64,
-                "matches": matches
+                "position": {"x": int(x), "y": int(y), "width": int(w), "height": int(h)},
+                "image_base64": face_base64,
+                "matches": matches,
+                "total_matches": len(matches)
             })
-
-        return {"status": "success", "total_faces_detected": len(faces), "results": results}
-
+        
+        return {
+            "total_faces_detected": len(faces),
+            "faces": face_results
+        }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error recognizing faces: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
