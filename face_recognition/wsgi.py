@@ -1,5 +1,6 @@
 from app import handler
 
+# This is the function that Vercel will call
 def vercel_handler(event, context):
     """
     Vercel serverless function handler

@@ -1,9 +1,7 @@
 fastapi==0.110.0
 uvicorn==0.29.0
-python-multipart==0.0.9
-pydantic==2.7.1
 pymongo==4.8.0
-motor==3.5.0
-python-dotenv==1.0.1
-numpy==1.26.4
+motor==3.5.0 
+dotenv
 opencv-python-headless==4.9.0.80
+
