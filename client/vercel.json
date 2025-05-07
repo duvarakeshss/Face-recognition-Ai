@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://face-reg-ai-server.vercel.app/api/$1"
+    },
+    {
+      "src": "/python-api/(.*)",
+      "dest": "https://face-reg-ai-python.vercel.app/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "API_URL": "@api_url",
+    "PYTHON_API_URL": "@python_api_url"
+  }
+} 

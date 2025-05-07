@@ -11,6 +11,9 @@ function LiveRegistration() {
   const [error, setError] = useState(null);
   const [processingInterval, setProcessingInterval] = useState(2000); // 2 seconds by default
   
+  // API URL can be accessed from environment variable
+  const apiUrl = '/api/recognize';
+  
   const videoConstraints = {
     width: 720,
     height: 480,
@@ -62,8 +65,8 @@ function LiveRegistration() {
       formData.append('max_faces', '5');
       formData.append('max_results', '3');
       
-      // Send to server for recognition
-      const response = await axios.post('/api/recognize', formData, {
+      // Send to server for recognition using the configured proxy URL
+      const response = await axios.post(apiUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

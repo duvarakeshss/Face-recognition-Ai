@@ -10,6 +10,9 @@ function Registration() {
   const [registrationResult, setRegistrationResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   
+  // API URL can be accessed from the environment variable
+  const apiUrl = '/api/register';
+  
   const videoConstraints = {
     width: 720,
     height: 480,
@@ -49,8 +52,8 @@ function Registration() {
       };
       formData.append('additional_info', JSON.stringify(additionalInfo));
       
-      // Send to server using axios - now pointing to the Node.js proxy server
-      const response = await axios.post('http://localhost:5000/api/register', formData, {
+      // Send to server using axios - using the configured proxy URL
+      const response = await axios.post(apiUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
