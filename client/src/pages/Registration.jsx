@@ -11,7 +11,7 @@ function Registration() {
   const [isLoading, setIsLoading] = useState(false);
   
   // API URL can be accessed from the environment variable
-  const apiUrl = '/api/register';
+  const apiUrl = "/api/register";
   
   const videoConstraints = {
     width: 720,
@@ -187,4 +187,4 @@ function Registration() {
   );
 }
 
-export default Registration; 
+export default Registration;

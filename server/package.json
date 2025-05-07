@@ -8,7 +8,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "nodemon server.js",
-    "build": "echo 'Build step skipped for serverless deployment'"
+    "build": "npm install"
   },
   "engines": {
     "node": ">=18.x"

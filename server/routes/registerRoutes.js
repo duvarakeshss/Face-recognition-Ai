@@ -17,7 +17,7 @@ router.post('/', upload.single('image'), async (req, res) => {
   
   try {
     // Get the Python server URL
-    const pythonServerUrl = `http://face-server.duvarakesh.xyz/register-face`;
+    const pythonServerUrl = "https://fac-backend-production.up.railway.app/register-face";
     
     // Create form data using the form-data package
     const formData = new FormData();
@@ -39,9 +39,12 @@ router.post('/', upload.single('image'), async (req, res) => {
     // Forward to Python server
     const response = await axios.post(pythonServerUrl, formData, {
       headers: {
-        ...formData.getHeaders() // Get content-type with boundary from FormData
-      }
+        ...formData.getHeaders()
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     });
+    
     
     // Return the response directly
     return res.status(response.status).json(response.data);

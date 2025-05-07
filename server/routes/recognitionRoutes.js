@@ -17,7 +17,7 @@ router.post('/', upload.single('image'), async (req, res) => {
   
   try {
     // Get the Python server URL for face recognition
-    const pythonServerUrl = `${process.env.API_URL}\recognize-face`;
+    const pythonServerUrl = `/https://fac-backend-production.up.railway.app/recognize-face`;
     
     // Create form data from the memory buffer using form-data package
     const formData = new FormData();
