@@ -280,9 +280,82 @@ async def recognize_face(
         raise HTTPException(status_code=500, detail=f"Error recognizing faces: {str(e)}")
 
 # Add handler for Vercel serverless deployment
-def handler(request, context):
+from fastapi.responses import JSONResponse
+import asyncio
+from urllib.parse import parse_qs
+
+async def handler(request, context):
     """Handler function for Vercel serverless deployment"""
-    return app
+    # Get request path and method
+    path = request.get("path", "/")
+    http_method = request.get("method", "GET").upper()
+    query_params = request.get("query", {})
+    headers = request.get("headers", {})
+    body = request.get("body", "")
+    
+    # Create a scope for the ASGI app
+    scope = {
+        "type": "http",
+        "asgi": {
+            "version": "3.0",
+            "spec_version": "2.0",
+        },
+        "http_version": "1.1",
+        "method": http_method,
+        "scheme": "https",
+        "path": path,
+        "query_string": "",
+        "headers": [(k.lower().encode(), v.encode()) for k, v in headers.items()],
+        "client": ("0.0.0.0", 0),
+        "server": ("vercel", 0),
+    }
+    
+    # Create receive and send callables
+    async def receive():
+        return {
+            "type": "http.request",
+            "body": body.encode() if isinstance(body, str) else body,
+            "more_body": False,
+        }
+    
+    response_body = []
+    response_headers = []
+    response_status = 200
+    
+    async def send(message):
+        nonlocal response_body, response_headers, response_status
+        if message["type"] == "http.response.start":
+            response_status = message["status"]
+            response_headers = message.get("headers", [])
+        elif message["type"] == "http.response.body":
+            response_body.append(message.get("body", b""))
+    
+    # Call the ASGI app
+    await app(scope, receive, send)
+    
+    # Convert headers to dict
+    headers_dict = {}
+    for k, v in response_headers:
+        key = k.decode()
+        val = v.decode()
+        headers_dict[key] = val
+    
+    # Combine response body parts
+    body = b"".join(response_body)
+    
+    # Try to decode as text if possible
+    try:
+        body = body.decode()
+    except UnicodeDecodeError:
+        # If we can't decode as text, return bytes
+        pass
+    
+    # Return the response
+    return {
+        "statusCode": response_status,
+        "headers": headers_dict,
+        "body": body,
+    }
 
 if __name__ == "__main__":
     import uvicorn
