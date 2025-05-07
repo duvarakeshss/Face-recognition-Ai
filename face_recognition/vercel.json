@@ -2,18 +2,29 @@
     "version": 2,
     "builds": [
       {
-        "src": "app.py",
+        "src": "app_light.py",
         "use": "@vercel/python",
         "config": {
           "runtime": "python3.9",
-          "maxLambdaSize": "50mb"
+          "maxLambdaSize": "10mb",
+          "includedFiles": [
+            "*.py",
+            "requirements-light.txt"
+          ],
+          "excludedFiles": [
+            "__pycache__/**",
+            "models/**",
+            "face_utils.py",
+            "db.py",
+            "app.py"
+          ]
         }
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "/app.py",
+        "dest": "/app_light.py",
         "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         "headers": {
           "Access-Control-Allow-Credentials": "true",
