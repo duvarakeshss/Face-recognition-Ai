@@ -3,4 +3,5 @@ uvicorn==0.29.0
 pymongo==4.8.0
 motor==3.5.0 
 python-dotenv
-opencv-python-headless==4.9.0.80
+numpy<2.0
+opencv-python
