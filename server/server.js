@@ -19,8 +19,8 @@ app.use(
   })
 );
 // Routes
-app.use('/api/register', registerRoutes);
-app.use('/api/recognize', recognitionRoutes);
+app.use('/register', registerRoutes);
+app.use('/recognize', recognitionRoutes);
 
 app.get('/', (req, res) => {
   res.send('Server is running!');
