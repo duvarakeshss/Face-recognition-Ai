@@ -9,10 +9,11 @@ function Registration() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [registrationResult, setRegistrationResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  
   // API URL can be accessed from the environment variable
-  const apiUrl = "/api/register";
-  
+  const baseUrl = import.meta.env.VITE_API_URL;
+  console.log('VITE_API_URL:', baseUrl);
+  const apiUrl = `${baseUrl}/api/register`;
+
   const videoConstraints = {
     width: 720,
     height: 480,

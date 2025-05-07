@@ -10,9 +10,9 @@ function LiveRegistration() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [processingInterval, setProcessingInterval] = useState(2000); // 2 seconds by default
-  
+  const baseUrl = import.meta.env.VITE_API_URL;  
   // API URL can be accessed from environment variable
-  const apiUrl = '/api/recognize';
+  const apiUrl = `${baseUrl}/api/recognize`;
   
   const videoConstraints = {
     width: 720,
