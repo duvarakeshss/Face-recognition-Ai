@@ -8,13 +8,15 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// Middleware to handle CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.CLIENT_URL || 'https://face-reg-ai.vercel.app']
-    : 'http://localhost:5173',
-  credentials: true
+    ? process.env.CLIENT_URL || 'https://face-recognition-ai.vercel.app' // Replace with Vercel domain
+    : 'http://localhost:5173', // Local development URL
+  credentials: true, // Allow cookies if needed
 }));
+
+// Middleware for JSON requests
 app.use(express.json());
 
 // Routes
@@ -29,7 +31,7 @@ app.get('/api', (req, res) => {
   });
 });
 
-// For local development
+// Listen on the server port for local development
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
@@ -38,4 +40,4 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Export for Vercel serverless function
-export default app; 
+export default app;
