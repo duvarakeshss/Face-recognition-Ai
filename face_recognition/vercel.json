@@ -1,22 +1,23 @@
 {
-    "version": 2,
-    "buildCommand": "cd face_recognition && ./vercel-install.sh",
-    "builds": [
-      {
-        "src": "app_light.py",
-        "use": "@vercel/python",
-        "config": {
-          "runtime": "python3.9"
-        }
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/app_light.py"
-      }
-    ],
-    "env": {
-      "PYTHONPATH": "."
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
     }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "functions": {
+    "app.py": {
+      "memory": 250
+    }
+  },
+  "env": {
+    "PYTHONUNBUFFERED": "1"
   }
+} 
