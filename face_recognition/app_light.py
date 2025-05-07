@@ -95,6 +95,37 @@ async def recognize_face_info():
         "message": "Due to Vercel's size limitations, this endpoint is not available in the light version. Please use the main API endpoint."
     }
 
-# Handler function for Vercel
-def handler(request, context):
-    return app 
+# Vercel handler functions
+async def app_handler(scope, receive, send):
+    await app(scope, receive, send)
+
+def handler(request):
+    """Direct handler function for Vercel"""
+    path = request.get('path', '/')
+    method = request.get('method', 'GET')
+    
+    # For debugging
+    print(f"Handling request: {method} {path}")
+    
+    # Simple response for get requests
+    if method.upper() == 'GET':
+        return {
+            "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({
+                "status": "ok",
+                "message": "Face Recognition API (Light Version)",
+                "path": path
+            })
+        }
+    
+    # For other methods
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({
+            "status": "ok",
+            "message": f"Received {method} request",
+            "path": path
+        })
+    } 
