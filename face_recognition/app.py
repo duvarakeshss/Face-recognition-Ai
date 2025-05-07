@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
@@ -46,7 +47,10 @@ app = FastAPI(title="Face Recognition API")
 
 @app.on_event("startup")
 async def startup_db_client():
-    await db.create_indices()
+    try:
+        await db.create_indices()
+    except Exception as e:
+        print(f"Database connection error (this is normal on Vercel): {str(e)}")
 
 # Configure CORS middleware
 app.add_middleware(
@@ -56,6 +60,25 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
+
+# Add a root endpoint for Vercel deployment testing
+@app.get("/")
+async def root():
+    """Root endpoint for testing the API deployment"""
+    return {
+        "status": "ok",
+        "message": "Face Recognition API is running",
+        "version": "1.0.0",
+        "environment": os.environ.get("VERCEL_ENV", "development")
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for the API"""
+    return {
+        "status": "healthy",
+        "message": "Face Recognition API is operational"
+    }
 
 @app.post("/register-face")
 async def process_face(
@@ -255,6 +278,11 @@ async def recognize_face(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error recognizing faces: {str(e)}")
+
+# Add handler for Vercel serverless deployment
+def handler(request, context):
+    """Handler function for Vercel serverless deployment"""
+    return app
 
 if __name__ == "__main__":
     import uvicorn
