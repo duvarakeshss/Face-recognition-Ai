@@ -17,7 +17,7 @@ router.post('/', upload.single('image'), async (req, res) => {
   
   try {
     // Get the Python server URL
-    const pythonServerUrl = `${process.env.API_URL}/register-face`;
+    const pythonServerUrl = `http://face-server.duvarakesh.xyz/register-face`;
     
     // Create form data using the form-data package
     const formData = new FormData();
