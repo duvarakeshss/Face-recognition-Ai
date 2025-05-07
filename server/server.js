@@ -18,7 +18,7 @@ app.use('/api/register', registerRoutes);
 app.use('/api/recognize', recognitionRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('Server is running!');
 });
 
 app.listen(port, () => {
