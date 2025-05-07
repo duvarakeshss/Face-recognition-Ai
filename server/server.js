@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/register', registerRoutes);
+app.use('/api/register', registerRoutes);
 app.use('/api/recognize', recognitionRoutes);
 
 app.get('/', (req, res) => {
