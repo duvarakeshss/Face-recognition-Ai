@@ -290,8 +290,7 @@ async def process_face(
             "name": name,
             "message": "Face processed and saved successfully",
             "timestamp": datetime.now().isoformat(),
-            "is_duplicate": False,
-            "similarity": highest_similarity
+            "is_duplicate": False
         }
         
     except Exception as e:
