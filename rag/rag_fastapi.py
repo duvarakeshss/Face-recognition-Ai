@@ -198,7 +198,7 @@ class RAGEngine:
                 raise ValueError("Query cannot be empty")
 
             # Retrieve relevant chunks with a smaller k value
-            docs = self.vector_store.similarity_search(query, k=2)  # Reduced from 3 to 2
+            docs = self.vector_store.similarity_search(query, k=2)
             
             # Group chunks by face ID
             face_chunks = {}

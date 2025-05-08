@@ -9,9 +9,9 @@ from typing import List, Dict, Any, Tuple, Optional
 face_cascade_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
 face_cascade = cv2.CascadeClassifier(face_cascade_path)
 
-# Try to load a more accurate model if available
+
 try:
-    # Load pre-trained deep learning model for face detection (if available)
+    
     prototxt_path = os.path.join('models', 'deploy.prototxt')
     caffemodel_path = os.path.join('models', 'res10_300x300_ssd_iter_140000.caffemodel')
     
@@ -27,16 +27,8 @@ except Exception as e:
     use_dnn = False
 
 def detect_faces(image_np):
-    """
-    Detect faces in an image using Haar cascades or DNN
     
-    Args:
-        image_np: Image as numpy array
-        
-    Returns:
-        List of face coordinates (x, y, w, h)
-    """
-    # Try DNN face detection first if available (more accurate)
+    
     if 'use_dnn' in globals() and use_dnn:
         try:
             return detect_faces_dnn(image_np)
@@ -61,7 +53,7 @@ def detect_faces(image_np):
         margin_x = int(w * 0.1)
         margin_y = int(h * 0.1)
         
-        # Make sure we don't go out of image bounds
+        # Don't go out of image bounds
         x = max(0, x - margin_x)
         y = max(0, y - margin_y)
         w = min(image_np.shape[1] - x, w + 2 * margin_x)
@@ -72,15 +64,7 @@ def detect_faces(image_np):
     return enhanced_faces
 
 def detect_faces_dnn(image_np):
-    """
-    Detect faces using DNN for better accuracy
     
-    Args:
-        image_np: Image as numpy array
-        
-    Returns:
-        List of face coordinates (x, y, w, h)
-    """
     (h, w) = image_np.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(image_np, (300, 300)), 1.0,
         (300, 300), (104.0, 177.0, 123.0))
@@ -120,15 +104,7 @@ def detect_faces_dnn(image_np):
     return faces
 
 def extract_face_encoding(face_image):
-    """
-    Extract face encoding features using texture-based features
     
-    Args:
-        face_image: Face image as numpy array
-        
-    Returns:
-        Feature vector as list of floats
-    """
     # Resize face to standard size
     face_resized = cv2.resize(face_image, (100, 100))
     
@@ -149,16 +125,7 @@ def extract_face_encoding(face_image):
     return feature_vector
 
 def compare_face_encodings(known_encoding, unknown_encoding):
-    """
-    Compare two face encodings using cosine similarity
     
-    Args:
-        known_encoding: First face encoding
-        unknown_encoding: Second face encoding
-        
-    Returns:
-        Similarity score (0.0 to 1.0, higher is more similar)
-    """
     if len(known_encoding) != len(unknown_encoding):
         # Pad the shorter vector if necessary
         max_len = max(len(known_encoding), len(unknown_encoding))
@@ -181,17 +148,7 @@ def compare_face_encodings(known_encoding, unknown_encoding):
     return float(similarity)
 
 def encode_image(image, format="jpeg", quality=95):
-    """
-    Encode an image to a specific format
     
-    Args:
-        image: Image as numpy array
-        format: Output format (jpeg/png)
-        quality: Compression quality (0-100)
-        
-    Returns:
-        Tuple of (encoded_bytes, media_type)
-    """
     if format.lower() == "png":
         encode_param = [int(cv2.IMWRITE_PNG_COMPRESSION), min(9, quality // 10)]
         _, encoded_img = cv2.imencode('.png', image, encode_param)
@@ -204,34 +161,13 @@ def encode_image(image, format="jpeg", quality=95):
     return encoded_img, media_type
 
 def image_to_base64(image, format="jpeg", quality=95):
-    """
-    Convert image to base64 string
     
-    Args:
-        image: Image as numpy array
-        format: Output format (jpeg/png)
-        quality: Compression quality (0-100)
-        
-    Returns:
-        Tuple of (base64_string, media_type)
-    """
     encoded_img, media_type = encode_image(image, format, quality)
     base64_str = base64.b64encode(encoded_img).decode('utf-8')
     return base64_str, media_type
 
 def create_face_document(name, face_img, face_encoding, additional_info=None):
-    """
-    Create a document for MongoDB face storage
     
-    Args:
-        name: Name of the person
-        face_img: Face image as numpy array
-        face_encoding: Face feature vector
-        additional_info: Any additional metadata
-        
-    Returns:
-        Dictionary ready for MongoDB storage
-    """
     # Compress the face image for storage
     face_image_base64, _ = image_to_base64(face_img, "jpeg", 90)
     
@@ -245,18 +181,7 @@ def create_face_document(name, face_img, face_encoding, additional_info=None):
     }
 
 def draw_face_rectangles(image, faces, color=(0, 255, 0), thickness=2):
-    """
-    Draw rectangles around detected faces
     
-    Args:
-        image: Image as numpy array
-        faces: List of face coordinates (x, y, w, h)
-        color: Rectangle color (B,G,R)
-        thickness: Line thickness
-        
-    Returns:
-        Image with rectangles drawn around faces and list of face regions
-    """
     img_with_faces = image.copy()
     face_regions = []
     
@@ -273,15 +198,7 @@ def draw_face_rectangles(image, faces, color=(0, 255, 0), thickness=2):
     return img_with_faces, face_regions
 
 def process_base64_image(base64_str):
-    """
-    Process base64 encoded image to numpy array
     
-    Args:
-        base64_str: Base64 encoded image string
-        
-    Returns:
-        Image as numpy array
-    """
     image_data = base64.b64decode(base64_str)
     nparr = np.frombuffer(image_data, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)

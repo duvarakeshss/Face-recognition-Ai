@@ -63,15 +63,7 @@ async def find_all_faces(skip: int = 0, limit: int = 10) -> Dict[str, Any]:
     }
 
 async def find_face_by_id(face_id: str) -> Optional[Dict[str, Any]]:
-    """
-    Find a face by its ID
-    
-    Args:
-        face_id: MongoDB ObjectId as string
-        
-    Returns:
-        Face document or None if not found
-    """
+   
     if not ObjectId.is_valid(face_id):
         return None
     
@@ -83,15 +75,7 @@ async def find_face_by_id(face_id: str) -> Optional[Dict[str, Any]]:
     return face
 
 async def delete_face_by_id(face_id: str) -> bool:
-    """
-    Delete a face by its ID
     
-    Args:
-        face_id: MongoDB ObjectId as string
-        
-    Returns:
-        True if face was deleted, False otherwise
-    """
     if not ObjectId.is_valid(face_id):
         return False
     
@@ -99,16 +83,7 @@ async def delete_face_by_id(face_id: str) -> bool:
     return result.deleted_count > 0
 
 async def search_faces_by_name(name: str, limit: int = 10) -> Dict[str, Any]:
-    """
-    Search for faces by name (case-insensitive)
-    
-    Args:
-        name: Name or partial name to search for
-        limit: Maximum number of results to return
-        
-    Returns:
-        Dictionary with search results
-    """
+   
     # Create a case-insensitive regex search
     query = {"name": {"$regex": name, "$options": "i"}}
     
@@ -130,12 +105,7 @@ async def search_faces_by_name(name: str, limit: int = 10) -> Dict[str, Any]:
     }
 
 async def find_all_faces_for_comparison() -> List[Dict[str, Any]]:
-    """
-    Retrieve all faces for comparison
-    
-    Returns:
-        List of face documents
-    """
+   
     cursor = face_collection.find()
     faces = await cursor.to_list(length=1000)  # Limit to 1000 faces for performance
     

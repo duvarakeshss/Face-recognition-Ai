@@ -51,7 +51,7 @@ async def startup_db_client():
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (for development)
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
