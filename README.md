@@ -94,6 +94,36 @@ For optimal performance and full functionality:
 - OpenAI ChatGPT (LLM)
 - GroqAI (LLM)
 
+### System Architecture Diagram
+```bash
++----------------------------+       +-----------------------+
+|      Client (Browser)     |<----->|    React Frontend     |
+| (Webcam, Chat UI, WS, UI) |       | (WebRTC, WebSocket)   |
++----------------------------+       +----------+------------+
+                                               |
+                                               | WebSocket/API Calls
+                                               v
+                                      +--------+---------+
+                                      |   Node.js Server |
+                                      | (WS Hub, REST API|
+                                      +--------+---------+
+                                               |
+              +--------------------------------+--------------------+
+              |                                                     |
+      +-------v--------+                                  +--------v--------+
+      | Python: Face    |                                  | Python: RAG Q&A |
+      | Recognition API |                                  |   (LangChain)   |
+      | (FastAPI + OpenCV)                                 |  + FAISS Vector |
+      +-----------------+                                  |    DB + LLMs    |
+              |                                             +--------+--------+
+              |                                                      |
++-------------v--------------+                            +----------v----------+
+| MongoDB: Face Metadata DB |                            |  OpenAI / Groq API   |
+| (Encodings, Names, Time)  |                            | (ChatGPT, LLaMA, etc)|
++---------------------------+                            +----------------------+
+
+```
+
 ## Prerequisites
 
 - Python 3.7+
