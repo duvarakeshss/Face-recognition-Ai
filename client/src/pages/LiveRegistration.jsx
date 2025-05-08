@@ -117,15 +117,15 @@ function LiveRegistration() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="max-w-xl mx-auto p-6 bg-gradient-to-b from-blue-50 to-gray-50 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-center">Live Face Recognition</h1>
       
-      <div className="mb-4 flex justify-between items-center">
-        <span className="text-sm">Processing Speed:</span>
+      <div className="mb-4 flex justify-between items-center bg-white p-2 rounded-lg shadow-sm">
+        <span className="text-sm font-medium text-gray-700">Processing Speed:</span>
         <select 
           value={processingInterval} 
           onChange={(e) => setProcessingInterval(Number(e.target.value))}
-          className="border rounded p-1 text-sm"
+          className="border rounded p-1 text-sm transition-all duration-300 hover:border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-gray-50"
         >
           <option value={3000}>Slow (3s)</option>
           <option value={2000}>Normal (2s)</option>
@@ -138,7 +138,7 @@ function LiveRegistration() {
         <div className="relative">
           <div 
             ref={containerRef} 
-            className="overflow-hidden rounded-lg border-2 border-gray-300"
+            className="overflow-hidden rounded-lg border-2 border-gray-300 transition-all duration-300 hover:border-blue-400 hover:shadow-md bg-gray-800"
           >
             <Webcam
               audio={false}
@@ -149,7 +149,7 @@ function LiveRegistration() {
             />
             
             {isProcessing && (
-              <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+              <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full text-sm animate-pulse">
                 Processing...
               </div>
             )}
@@ -165,18 +165,18 @@ function LiveRegistration() {
                 setError(null);
               }
             }}
-            className={`w-full py-3 px-4 rounded-lg text-white font-medium ${
+            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-300 ${
               isActive 
-                ? 'bg-red-600 hover:bg-red-700' 
-                : 'bg-green-600 hover:bg-green-700'
-            } transition`}
+                ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-md hover:-translate-y-1' 
+                : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-md hover:-translate-y-1'
+            }`}
           >
             {isActive ? 'Stop Recognition' : 'Start Recognition'}
           </button>
         </div>
       </div>
       
-      <div className="p-4 bg-gray-100 rounded-lg">
+      <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg transition-all duration-300 hover:shadow-md">
         <h2 className="font-bold mb-2">Recognition Results:</h2>
         
         {error ? (
@@ -187,13 +187,15 @@ function LiveRegistration() {
               {recognitionResults.map((result) => (
                 <div 
                   key={result.faceId} 
-                  className={`p-2 rounded border ${
-                    result.recognized ? 'border-green-500 bg-green-50' : 'border-yellow-500 bg-yellow-50'
+                  className={`p-2 rounded border transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+                    result.recognized 
+                      ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-50' 
+                      : 'border-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-50'
                   }`}
                 >
                   <div className="flex justify-between">
                     <span className="font-medium">Face #{result.faceId + 1}</span>
-                    <span className="text-xs bg-gray-200 px-1 rounded">{result.timestamp}</span>
+                    <span className="text-xs bg-white px-1 rounded shadow-sm">{result.timestamp}</span>
                   </div>
                   
                   {result.recognized ? (
@@ -221,10 +223,10 @@ function LiveRegistration() {
               ))}
             </div>
           ) : (
-            <p>Waiting for faces...</p>
+            <p className="text-gray-600 italic">Waiting for faces...</p>
           )
         ) : (
-          <p>Recognition inactive</p>
+          <p className="text-gray-600 italic">Recognition inactive</p>
         )}
       </div>
     </div>

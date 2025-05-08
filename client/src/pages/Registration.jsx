@@ -84,7 +84,7 @@ function Registration() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="max-w-xl mx-auto p-6 bg-gradient-to-b from-gray-50 to-gray-100 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-center">Face Registration</h1>
       
       <div className="mb-6">
@@ -94,7 +94,7 @@ function Registration() {
           id="userName"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:border-blue-300 bg-white"
           placeholder="Enter your name"
         />
       </div>
@@ -102,7 +102,7 @@ function Registration() {
       <div className="mb-6">
         <div className="relative">
           {isCapturing ? (
-            <div className="overflow-hidden rounded-lg border-2 border-gray-300">
+            <div className="overflow-hidden rounded-lg border-2 border-gray-300 transition-all duration-300 hover:border-blue-400 bg-gray-800">
               <Webcam
                 audio={false}
                 ref={webcamRef}
@@ -112,12 +112,12 @@ function Registration() {
               />
             </div>
           ) : capturedImage ? (
-            <div className="overflow-hidden rounded-lg border-2 border-gray-300">
+            <div className="overflow-hidden rounded-lg border-2 border-gray-300 transition-all duration-300 hover:border-green-400 bg-gray-50">
               <img src={capturedImage} alt="Captured face" className="w-full" />
             </div>
           ) : (
-            <div className="h-60 bg-gray-100 flex items-center justify-center rounded-lg border-2 border-gray-300">
-              <span className="text-gray-500">Camera preview will appear here</span>
+            <div className="h-60 bg-gray-200 flex items-center justify-center rounded-lg border-2 border-gray-300 transition-all duration-300 hover:border-blue-300">
+              <span className="text-gray-600">Camera preview will appear here</span>
             </div>
           )}
         </div>
@@ -126,14 +126,14 @@ function Registration() {
           {!isCapturing ? (
             <button
               onClick={() => setIsCapturing(true)}
-              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-md hover:-translate-y-1"
             >
               Start Camera
             </button>
           ) : (
             <button
               onClick={capture}
-              className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+              className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-4 rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-md hover:-translate-y-1"
             >
               Capture
             </button>
@@ -146,7 +146,7 @@ function Registration() {
                 setIsCapturing(false);
                 setRegistrationResult(null);
               }}
-              className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition"
+              className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2 px-4 rounded-lg transition-all duration-300 hover:from-gray-600 hover:to-gray-700 hover:shadow-md hover:-translate-y-1"
             >
               Retake
             </button>
@@ -157,20 +157,20 @@ function Registration() {
       <button
         onClick={handleRegister}
         disabled={!capturedImage || !userName.trim() || isLoading}
-        className={`w-full py-3 px-4 rounded-lg text-white font-medium ${
+        className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-300 ${
           !capturedImage || !userName.trim() || isLoading
             ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-green-600 hover:bg-green-700 transition'
+            : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 hover:shadow-lg hover:-translate-y-1'
         }`}
       >
         {isLoading ? 'Processing...' : 'Register Face'}
       </button>
       
       {registrationResult && (
-        <div className={`mt-4 p-4 rounded-lg ${
+        <div className={`mt-4 p-4 rounded-lg transition-all duration-300 hover:shadow-md ${
           registrationResult.error || (registrationResult.is_duplicate && registrationResult.is_duplicate === true)
-            ? 'bg-yellow-100 border border-yellow-400'
-            : 'bg-green-100 border border-green-400'
+            ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-400 hover:bg-yellow-50'
+            : 'bg-gradient-to-r from-green-100 to-green-50 border border-green-400 hover:bg-green-50'
         }`}>
           <p className="font-medium">
             {registrationResult.error 

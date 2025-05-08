@@ -4,6 +4,7 @@ import Homepage from './pages/HomePage'
 import Registration from './pages/Registration'
 import LiveRegistration from './pages/LiveRegistration'
 import Navbar from './components/Navbar'
+import Chatbot from './components/Chatbot'
 import './App.css'
 
 function App() {
@@ -19,6 +20,9 @@ function App() {
             <Route path="/live-recognition" element={<LiveRegistration />} />
           </Routes>
         </div>
+        
+        {/* Chatbot Widget */}
+                  <Chatbot />
       </div>
     </BrowserRouter>
   )
