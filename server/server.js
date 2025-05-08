@@ -14,21 +14,31 @@ const port = process.env.PORT || 5000;
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ["https://face-recognition-ai.vercel.app", "http://localhost:5173","https://face-recognition.duvarakesh.xyz"],
+    origin: [
+      "https://face-recognition-ai.vercel.app",
+      "http://localhost:5173",
+      "https://face-recognition.duvarakesh.xyz",
+      "https://face-server.duvarakesh.xyz"
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
 // Configuration for RAG service
-const FASTAPI_URL = process.env.FASTAPI_URL || 'face-rag-production.up.railway.app';
+const FASTAPI_URL = process.env.FASTAPI_URL || 'http://localhost:8000';
 console.log(`Using RAG service at ${FASTAPI_URL}`);
 
 // Middleware
 app.use(express.json({ limit: "100mb" }));
 app.use(
   cors({
-    origin: ["https://face-recognition-ai.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://face-recognition-ai.vercel.app",
+      "http://localhost:5173",
+      "https://face-recognition.duvarakesh.xyz",
+      "https://face-server.duvarakesh.xyz"
+    ],
     methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true,
   })
