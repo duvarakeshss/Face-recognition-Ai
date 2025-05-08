@@ -4,7 +4,9 @@ A comprehensive face recognition platform that combines real-time face detection
 
 ### Demo Video
 
-`https://www.loom.com/share/23d1dcaa2214437e8e8401fafba0fa70?sid=e17dc3cf-0a1a-4179-b8f8-cbc65f50d39c`
+```bash
+https://www.loom.com/share/23d1dcaa2214437e8e8401fafba0fa70?sid=e17dc3cf-0a1a-4179-b8f8-cbc65f50d39c
+```
 
 ## Project Overview
 
