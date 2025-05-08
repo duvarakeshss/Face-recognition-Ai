@@ -140,9 +140,8 @@ class RAGEngine:
                         continue
 
                     # Create smaller, focused chunks for each face
-                    # Basic info chunk
+                    # Basic info chunk - keep it minimal
                     basic_info = (
-                        f"ID: {face['_id']}\n"
                         f"Name: {face.get('name', 'Unknown')}\n"
                         f"Registered: {registration_time}"
                     )
@@ -156,14 +155,14 @@ class RAGEngine:
                         }
                     ))
 
-                    # Additional info chunk (if any)
+                    # Additional info chunk (if any) - limit to essential fields
                     additional_info = []
                     for key, value in face.items():
-                        if key not in ['_id', 'name', 'registration_time', 'registration_timestamp']:
+                        if key not in ['_id', 'name', 'registration_time', 'registration_timestamp', 'face_encoding']:
                             additional_info.append(f"{key}: {value}")
                     
                     if additional_info:
-                        info_chunk = f"Additional Info for {face.get('name', 'Unknown')}:\n" + "\n".join(additional_info)
+                        info_chunk = f"Additional Info for {face.get('name', 'Unknown')}:\n" + "\n".join(additional_info[:3])  # Limit to 3 additional fields
                         documents.append(Document(
                             page_content=info_chunk,
                             metadata={
@@ -199,7 +198,7 @@ class RAGEngine:
                 raise ValueError("Query cannot be empty")
 
             # Retrieve relevant chunks with a smaller k value
-            docs = self.vector_store.similarity_search(query, k=3)
+            docs = self.vector_store.similarity_search(query, k=2)  # Reduced from 3 to 2
             
             # Group chunks by face ID
             face_chunks = {}
@@ -223,19 +222,16 @@ class RAGEngine:
             
             context = "\n---\n".join(context_parts)
 
-            # Prepare chat history (limit to last 2 exchanges)
-            recent_history = list(self.chat_history)[-2:] if len(self.chat_history) > 2 else list(self.chat_history)
+            # Prepare chat history (limit to last 1 exchange)
+            recent_history = list(self.chat_history)[-1:] if self.chat_history else []
             chat_history = "\n".join([f"Q: {q}\nA: {a}" for q, a in recent_history])
 
             # Create a more concise system prompt
-            system_prompt = """You are a face recognition system assistant. Answer based on the context.
+            system_prompt = """You are a face recognition assistant. Answer based on the context.
 Guidelines:
-- For specific person queries: Provide their registration time and key details
-- For last registered: Compare timestamps and identify most recent
-- For count queries: Count unique names
-- If information is missing: Say so
 - Keep answers brief and focused
-- Always include names with timestamps"""
+- Include names with timestamps
+- If information is missing, say so"""
 
             # Create a more concise prompt
             formatted_prompt = f"""<s>[INST] {system_prompt}
@@ -258,7 +254,7 @@ Assistant: [/INST]"""
                     model="llama-3.1-8b-instant",
                     messages=[{"role": "user", "content": formatted_prompt}],
                     temperature=0.1,
-                    max_tokens=512  # Reduced max tokens
+                    max_tokens=256  # Reduced from 512 to 256
                 )
                 logger.info(f"Groq API Response: {response}")
                 
